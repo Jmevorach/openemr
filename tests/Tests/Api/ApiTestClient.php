@@ -121,6 +121,7 @@ class ApiTestClient
         'user/MedicationRequest.read',
         'user/MedicationRequest.write',
         'user/Observation.read',
+        'user/Observation.write',
         'user/Organization.read',
         'user/Organization.write',
         'user/Patient.read',
@@ -140,11 +141,15 @@ class ApiTestClient
         'user/RelatedPerson.write',
         'user/ServiceRequest.read',
         'user/ServiceRequest.write',
+        'user/Task.read',
+        'user/Task.write',
 
         'user/allergy.read',
         'user/allergy.write',
         'user/appointment.read',
         'user/appointment.write',
+        'user/background_service.rs',
+        'user/background_service.$run',
         'user/dental_issue.read',
         'user/dental_issue.write',
         'user/document.read',
@@ -158,6 +163,7 @@ class ApiTestClient
         'user/employer.read',
         'user/insurance.read',
         'user/insurance.write',
+        'user/insurance.$swap-insurance',
         'user/insurance_company.read',
         'user/insurance_company.write',
         'user/insurance_type.read',
@@ -178,6 +184,9 @@ class ApiTestClient
         'user/soap_note.write',
         'user/surgery.read',
         'user/surgery.write',
+        'user/transaction.read',
+        'user/transaction.write',
+        'user/user.read',
         'user/vital.read',
         'user/vital.write',
     ];
@@ -486,13 +495,14 @@ class ApiTestClient
      * Submits a HTTP PUT Request.
      *
      * @param array<string, mixed> $body
+     * @param array<string, string> $headers more request headers, such as If-Match
      */
-    public function put(string $url, string $id, array $body): ResponseInterface
+    public function put(string $url, string $id, array $body, array $headers = []): ResponseInterface
     {
         $resourceUrl = $url . "/" . $id;
 
         $putResponse = $this->client->put($resourceUrl, [
-            "headers" => $this->headers,
+            "headers" => array_merge($this->headers, $headers),
             "body" => json_encode($body)
         ]);
         return $putResponse;

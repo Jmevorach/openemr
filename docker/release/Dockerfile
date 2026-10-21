@@ -45,7 +45,7 @@ RUN apk --no-cache upgrade
 # apache2-utils (utilities), bash (shell), certbot (Let's Encrypt), curl (HTTP client),
 # dcron (scheduled tasks), git (version control), imagemagick (image processing),
 # mariadb-client (database client), mariadb-connector-c (DB connector), ncurses (terminal),
-# nodejs/npm (JavaScript runtime), openssl/openssl-dev (cryptography), perl (interpreter),
+# openssl/openssl-dev (cryptography), perl (interpreter),
 # rsync (file sync), shadow (user management), su-exec (lightweight privilege-drop
 # tool used by run_php_as_apache to invoke OpenEMR CLI scripts as the apache user
 # without an intermediate shell — busybox `su` rescans options across the whole
@@ -64,8 +64,6 @@ RUN apk add --no-cache \
     mariadb-client \
     mariadb-connector-c \
     ncurses \
-    nodejs \
-    npm \
     openssl \
     openssl-dev \
     perl \
@@ -132,8 +130,11 @@ RUN sed -i 's/^Listen 80$/Listen 0.0.0.0:80/' /etc/apache2/httpd.conf
 # ============================================================================
 # Set Apache user UID to 1000 to ensure consistent permissions across
 # shared volumes when using multiple containers (OpenEMR, nginx, php-fpm)
-# This prevents permission conflicts in multi-container deployments
-RUN usermod -u 1000 apache
+# This prevents permission conflicts in multi-container deployments.
+# Override with --build-arg APACHE_UID=<uid> to match a dedicated host account
+# that owns bind-mounted site directories (uid 1000 is often a person's login).
+ARG APACHE_UID=1000
+RUN usermod -u "${APACHE_UID}" apache
 
 # ============================================================================
 # PHP CONFIGURATION
@@ -204,9 +205,6 @@ RUN apk add --no-cache build-base nodejs npm
 RUN --mount=type=cache,target=/root/.npm \
     npm install \
     && npm run build \
-    && cd ccdaservice \
-    && npm install --allow-git=all \
-    && cd .. \
     && rm -fr node_modules \
     && apk del --no-cache build-base
 
@@ -219,9 +217,9 @@ COPY --from=openemr-source /openemr /tmp/openemr
 COPY --from=openemr-composer /openemr/vendor /tmp/openemr/vendor
 COPY --from=openemr-composer /openemr/composer.json /tmp/openemr/composer.json
 COPY --from=openemr-composer /openemr/composer.lock /tmp/openemr/composer.lock
+COPY --from=openemr-composer /openemr/interface/modules/custom_modules /tmp/openemr/interface/modules/custom_modules
 # Copy built assets
 COPY --from=openemr-assets /openemr/public /tmp/openemr/public
-COPY --from=openemr-assets /openemr/ccdaservice /tmp/openemr/ccdaservice
 
 RUN cd /tmp \
     # =========================================================================

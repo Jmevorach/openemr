@@ -305,7 +305,7 @@ class ScopeRepository implements ScopeRepositoryInterface
         return $description;
     }
 
-    private function lookupDescriptionForResourceOperation(ScopeEntity $scope)
+    private function lookupDescriptionForResourceOperation(ScopeEntity $scope): string
     {
         $resource = $scope->getResource();
         return match ($scope->getOperation()) {
@@ -326,6 +326,10 @@ class ScopeRepository implements ScopeRepositoryInterface
             ,'$swap-insurance' => match ($scope->getResource()) {
                 'insurance' => xl("Permission to swap the insurance position for a patient (such as primary and secondary insurance)"),
                 default => xl("Permission to swap the insurance for resource type") . " " . $resource,
+            }
+            ,'$run' => match ($scope->getResource()) {
+                'background_service' => xl("Permission to trigger execution of a named background service"),
+                default => xl("Permission to invoke the \$run operation on resource type") . " " . $resource,
             }
             ,default => throw new InvalidArgumentException("Unknown operation for scope: " . $scope->getOperation())
         };

@@ -176,7 +176,7 @@ class RuleManager
         return $rule;
     }
 
-    public function newRule()
+    public function newRule(): Rule
     {
         $rule = new Rule();
         return $rule;
@@ -553,7 +553,7 @@ class RuleManager
         return $ruleId;
     }
 
-    public function getNextRuleId()
+    public function getNextRuleId(): string
     {
         $result = sqlQuery("select count(*)+1 AS id from clinical_rules");
         $ruleId = "rule_" . $result['id'];
@@ -685,7 +685,7 @@ class RuleManager
         }
     }
 
-    public function getAllowedFilterCriteriaTypes()
+    public function getAllowedFilterCriteriaTypes(): array
     {
         $allowed = [];
         foreach (RuleCriteriaType::values() as $type) {
@@ -696,7 +696,7 @@ class RuleManager
         return $allowed;
     }
 
-    public function getAllowedTargetCriteriaTypes()
+    public function getAllowedTargetCriteriaTypes(): array
     {
         $allowed = [];
         array_push($allowed, RuleCriteriaType::from(RuleCriteriaType::lifestyle));
